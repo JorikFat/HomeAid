@@ -7,10 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
+
+import static ru.jorik.homeaid.MedicineDBHandler.dateFormat;
 
 
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Holder> {
@@ -40,7 +39,6 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Holder
     @Override
     public void onBindViewHolder(Holder holder, int position) {
         String dateOverString;
-        DateFormat dateFormat = new SimpleDateFormat("d.MM.yyyy", Locale.UK);
         Medicine medicine = medicineList.get(position);
 
         if (medicine.getDateOver() != null){

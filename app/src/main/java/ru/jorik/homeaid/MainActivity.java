@@ -12,15 +12,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+
+import static ru.jorik.homeaid.MedicineDBHandler.dateFormat;
 
 public class MainActivity extends AppCompatActivity
     implements MedicineAdapter.HolderClickListener{
 
     List<Medicine> tempMedicineList;
+    MedicineDBHandler db;
+    RecyclerView recyclerView;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,21 +42,16 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        db = new MedicineDBHandler(this);
+
         tempMedicineList = new ArrayList<>();
-        tempMedicineList.add(new Medicine("1 Лекарство 1", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("2 Лекарство 2", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("3 Лекарство 3", Calendar.getInstance().getTime()));
+
+        tempMedicineList = db.readAll();
+        tempMedicineList.add(new Medicine("1 Лекарство 1", shortCall()));
         tempMedicineList.add(new Medicine("4 ЛекарствоБСГ 1"));
         tempMedicineList.add(new Medicine("5 ЛекарствоБСГ 2"));
-        tempMedicineList.add(new Medicine("6 Лекарство 4", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("7 Лекарство 5", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("8 ЛекарствоБСГ 3"));
-        tempMedicineList.add(new Medicine("9 ЛекарствоБСГ 4"));
-        tempMedicineList.add(new Medicine("10 Лекарство 6", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("11 Лекарство 7", Calendar.getInstance().getTime()));
-        tempMedicineList.add(new Medicine("12 Лекарство 8", Calendar.getInstance().getTime()));
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         MedicineAdapter medicineAdapter = new MedicineAdapter(this, tempMedicineList);
         medicineAdapter.setOnClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -74,7 +73,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_addTempItem) {
+            addTempMedicine();
             return true;
         }
 
@@ -87,10 +87,19 @@ public class MainActivity extends AppCompatActivity
         String textToast;
         Medicine med = tempMedicineList.get(numMed);
         if (med.getDateOver() != null) {
-            textToast = new SimpleDateFormat("d.MM.yyyy").format(med.getDateOver());
+            textToast = dateFormat.format(med.getDateOver());
         } else {
             textToast = "Дата не указана";
         }
         Toast.makeText(this, textToast, Toast.LENGTH_SHORT).show();
+    }
+
+    private void addTempMedicine(){
+        db.createItem(new Medicine("tempMedicine", shortCall()));
+    }
+
+    //костыль разработки
+    public static Date shortCall(){
+        return Calendar.getInstance().getTime();
     }
 }
