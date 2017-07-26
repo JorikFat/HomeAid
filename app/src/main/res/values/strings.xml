@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">HomeAid</string>
     <string name="action_addTempItem">addTempItem</string>
+    <string name="action_refresh">refresh</string>
 </resources>

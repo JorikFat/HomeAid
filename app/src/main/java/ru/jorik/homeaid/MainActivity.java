@@ -76,6 +76,9 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_addTempItem) {
             addTempMedicine();
             return true;
+        } else if(id == R.id.action_refresh){
+            refreshRV();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -95,11 +98,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addTempMedicine(){
-        db.createItem(new Medicine("tempMedicine", shortCall()));
+        db.createItem(new Medicine("newMedicine", shortCall()));
     }
 
     //костыль разработки
     public static Date shortCall(){
         return Calendar.getInstance().getTime();
     }
+
+    private void refreshRV(){
+        //Не работает
+//        tempMedicineList = db.readAll();
+//        recyclerView.getAdapter().notifyDataSetChanged();
+
+        //Костыль, который работает
+        if (recyclerView.getAdapter() != null) {
+            recyclerView.setAdapter(null);
+        }
+        MedicineAdapter medicineAdapter = new MedicineAdapter(this, db.readAll());
+        medicineAdapter.setOnClickListener(this);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL,
+                false));
+        recyclerView.setAdapter(medicineAdapter);
+    }
+
 }
