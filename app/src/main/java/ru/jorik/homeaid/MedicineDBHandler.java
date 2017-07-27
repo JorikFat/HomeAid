@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static ru.jorik.homeaid.MainActivity.shortCall;
+import static ru.jorik.homeaid.LittleUtils.getToday;
 
 
 
@@ -104,7 +104,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
 
         String rName = cursor.getString(cursor.getColumnIndex(DataBaseTables.Medicine.NAME));
         String tempDate = cursor.getString(cursor.getColumnIndex(DataBaseTables.Medicine.DATE_OVER));
-        Date rDate = shortCall();//// TODO: 27.07.2017 убрать костыль инициализации
+        Date rDate = getToday();//// TODO: 27.07.2017 убрать костыль инициализации
         try {
             rDate = dateFormat.parse(tempDate);
         } catch (ParseException e) {
@@ -184,7 +184,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
             do {
                 String rName = c.getString(c.getColumnIndex(DataBaseTables.Medicine.NAME));
                 String tempDate = c.getString(c.getColumnIndex(DataBaseTables.Medicine.DATE_OVER));
-                Date rDate = shortCall();//// TODO: 27.07.2017 убрать костыль инициализации
+                Date rDate = getToday();//// TODO: 27.07.2017 убрать костыль инициализации
                 try {
                     rDate = dateFormat.parse(tempDate);
                 } catch (ParseException e) {

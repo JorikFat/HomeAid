@@ -1,8 +1,11 @@
 package ru.jorik.homeaid;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,13 +13,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
+import static ru.jorik.homeaid.LittleUtils.getCustomCalendar;
 import static ru.jorik.homeaid.MedicineDBHandler.dateFormat;
 
 public class MainActivity extends AppCompatActivity
@@ -71,7 +76,8 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_addTempItem) {
-            addTempMedicine();
+//            addTempMedicine();
+            addNewMedicine();
             return true;
         } else if(id == R.id.action_refresh){
             refreshRV();
@@ -94,16 +100,12 @@ public class MainActivity extends AppCompatActivity
         Toast.makeText(this, textToast, Toast.LENGTH_SHORT).show();
     }
 
-    private void addTempMedicine(){
-        Medicine newMed = new Medicine("notRefreshingMed");
-        tempMedicineList.add(newMed);
-        db.createItem(newMed);
+    private void addTempMedicine(Medicine newMedicine){
+        tempMedicineList.add(newMedicine);
+        db.createItem(newMedicine);
     }
 
-    //костыль разработки
-    public static Date shortCall(){
-        return Calendar.getInstance().getTime();
-    }
+
 
     private void refreshRV(){
         //Не работает
@@ -119,6 +121,35 @@ public class MainActivity extends AppCompatActivity
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this,
 //                LinearLayoutManager.VERTICAL, false));
 //        recyclerView.setAdapter(medicineAdapter);
+    }
+
+    public void addNewMedicine(){
+//        ConstraintLayout dialogLayout = (ConstraintLayout) findViewById(R.id.dialog_input);
+        ConstraintLayout dialogLayout = (ConstraintLayout) getLayoutInflater().inflate(R.layout.dialog_input_medicine, null);
+        final EditText editText = (EditText) dialogLayout.findViewById(R.id.input_newMedicineName);
+        final DatePicker datePicker = (DatePicker) dialogLayout.findViewById(R.id.datePicker);
+        Calendar tempCalendar = Calendar.getInstance();
+        int year = tempCalendar.get(Calendar.YEAR);
+        int month = tempCalendar.get(Calendar.MONTH);
+        int day = tempCalendar.get(Calendar.DAY_OF_MONTH);
+
+        datePicker.updateDate(year, month, day);//установка сегоднешней даты для отображения
+        new AlertDialog.Builder(this)
+                .setTitle("Новый препарат")
+                .setView(dialogLayout)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int year = datePicker.getYear();
+                        int month = datePicker.getMonth()+1;
+                        int day = datePicker.getDayOfMonth();
+                        Calendar calendar = getCustomCalendar(year, month, day);
+                        Medicine medicine = new Medicine(String.valueOf(editText.getText()), calendar.getTime());
+                        addTempMedicine(medicine);
+                        refreshRV();
+                    }
+                })
+                .show();
     }
 
 }
