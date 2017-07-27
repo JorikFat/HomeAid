@@ -47,9 +47,6 @@ public class MainActivity extends AppCompatActivity
         tempMedicineList = new ArrayList<>();
 
         tempMedicineList = db.readAll();
-        tempMedicineList.add(new Medicine("1 Лекарство 1", shortCall()));
-        tempMedicineList.add(new Medicine("4 ЛекарствоБСГ 1"));
-        tempMedicineList.add(new Medicine("5 ЛекарствоБСГ 2"));
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         MedicineAdapter medicineAdapter = new MedicineAdapter(this, tempMedicineList);
@@ -98,7 +95,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addTempMedicine(){
-        db.createItem(new Medicine("newMedicine", shortCall()));
+        Medicine newMed = new Medicine("notRefreshingMed");
+        tempMedicineList.add(newMed);
+        db.createItem(newMed);
     }
 
     //костыль разработки
@@ -109,17 +108,17 @@ public class MainActivity extends AppCompatActivity
     private void refreshRV(){
         //Не работает
 //        tempMedicineList = db.readAll();
-//        recyclerView.getAdapter().notifyDataSetChanged();
+        recyclerView.getAdapter().notifyDataSetChanged();
 
         //Костыль, который работает
-        if (recyclerView.getAdapter() != null) {
-            recyclerView.setAdapter(null);
-        }
-        MedicineAdapter medicineAdapter = new MedicineAdapter(this, db.readAll());
-        medicineAdapter.setOnClickListener(this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL,
-                false));
-        recyclerView.setAdapter(medicineAdapter);
+//        if (recyclerView.getAdapter() != null) {
+//            recyclerView.setAdapter(null);
+//        }
+//        MedicineAdapter medicineAdapter = new MedicineAdapter(this, db.readAll());
+//        medicineAdapter.setOnClickListener(this);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this,
+//                LinearLayoutManager.VERTICAL, false));
+//        recyclerView.setAdapter(medicineAdapter);
     }
 
 }

@@ -14,9 +14,7 @@ import java.util.List;
 
 import static ru.jorik.homeaid.MainActivity.shortCall;
 
-/**
- * Created by 111 on 26.07.2017.
- */
+
 
 public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceDataBaseHandler<Medicine>{
 
@@ -75,9 +73,13 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
     public void createItem(Medicine medicine) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        String dateString;
 
-        String dateString = dateFormat.format(medicine.getDateOver());
-
+        if(medicine.getDateOver() == null){
+            dateString = "";
+        } else {
+            dateString = dateFormat.format(medicine.getDateOver());
+        }
         values.put(DataBaseTables.Medicine.NAME, medicine.getName());
         values.put(DataBaseTables.Medicine.DATE_OVER, dateString);
 
