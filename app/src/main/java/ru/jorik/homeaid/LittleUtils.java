@@ -1,5 +1,6 @@
 package ru.jorik.homeaid;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -8,7 +9,11 @@ import java.util.Date;
  */
 
 //Костыли для разработки
+    //Я знаю что этот класс вредит работе приложения и постоянно весит в памяти. Забейте. Потом исправлю
+    //// TODO: 28.07.2017 раскидать методы по другим классам
 public class LittleUtils {
+
+    static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
     //работа с Calendar
     public static Date getToday(){

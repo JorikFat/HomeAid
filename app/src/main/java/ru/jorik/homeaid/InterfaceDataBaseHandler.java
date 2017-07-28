@@ -9,8 +9,8 @@ import java.util.List;
 public interface InterfaceDataBaseHandler<T> {
     public void createItem(T t);
     public T readItem(int id);
-    public int updateItem(int id, T t);
-    public void deleteItem(int id);
+    public int updateItem(long id, T t);
+    public void deleteItem(long id);
 
     public void addGroup(List<T> tList);
     public T[] readGroup(int startId, int length);

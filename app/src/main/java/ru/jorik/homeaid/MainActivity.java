@@ -15,14 +15,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static ru.jorik.homeaid.LittleUtils.dateFormat;
 import static ru.jorik.homeaid.LittleUtils.getCustomCalendar;
-import static ru.jorik.homeaid.MedicineDBHandler.dateFormat;
 
 public class MainActivity extends AppCompatActivity
     implements MedicineAdapter.HolderClickListener{
@@ -69,18 +69,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_addTempItem) {
-//            addTempMedicine();
             addNewMedicine();
             return true;
         } else if(id == R.id.action_refresh){
-            refreshRV();
             return true;
         }
 
@@ -90,41 +84,37 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onHolderClick(int numMed) {
-        String textToast;
         Medicine med = tempMedicineList.get(numMed);
-        if (med.getDateOver() != null) {
-            textToast = dateFormat.format(med.getDateOver());
-        } else {
-            textToast = "Дата не указана";
-        }
-        Toast.makeText(this, textToast, Toast.LENGTH_SHORT).show();
+        showMedicineDetails(med);
     }
 
-    private void addTempMedicine(Medicine newMedicine){
+    private void addMedicineDB(Medicine newMedicine){
+        /*
+        * Вот тут вообще костыль:
+        * для того, чтобы получить id записи из базы данных сначала делается запись объекта
+        * потом считывается этот объект из базы данных
+        * и только тогда присваивается ему id.
+        * Иначе это не работает, потому что невозможно узнать, какой последний id был добавлен в бд,
+        * так как последнее добавление можно удалить и тогда будет крах
+        * */
         tempMedicineList.add(newMedicine);
         db.createItem(newMedicine);
+        recyclerView.getAdapter().notifyDataSetChanged();
     }
 
-
-
-    private void refreshRV(){
-        //Не работает
-//        tempMedicineList = db.readAll();
+    private void editMedicineDB(int index, Medicine medicine){
+        tempMedicineList.set(index, medicine);
+        db.updateItem(medicine.getId(), medicine);
         recyclerView.getAdapter().notifyDataSetChanged();
+    }
 
-        //Костыль, который работает
-//        if (recyclerView.getAdapter() != null) {
-//            recyclerView.setAdapter(null);
-//        }
-//        MedicineAdapter medicineAdapter = new MedicineAdapter(this, db.readAll());
-//        medicineAdapter.setOnClickListener(this);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this,
-//                LinearLayoutManager.VERTICAL, false));
-//        recyclerView.setAdapter(medicineAdapter);
+    private void removeMedicineDB(int index, long id){
+        tempMedicineList.remove(index);
+        db.deleteItem(id);
+        recyclerView.getAdapter().notifyDataSetChanged();
     }
 
     public void addNewMedicine(){
-//        ConstraintLayout dialogLayout = (ConstraintLayout) findViewById(R.id.dialog_input);
         ConstraintLayout dialogLayout = (ConstraintLayout) getLayoutInflater().inflate(R.layout.dialog_input_medicine, null);
         final EditText editText = (EditText) dialogLayout.findViewById(R.id.input_newMedicineName);
         final DatePicker datePicker = (DatePicker) dialogLayout.findViewById(R.id.datePicker);
@@ -137,7 +127,7 @@ public class MainActivity extends AppCompatActivity
         new AlertDialog.Builder(this)
                 .setTitle("Новый препарат")
                 .setView(dialogLayout)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int year = datePicker.getYear();
@@ -145,11 +135,71 @@ public class MainActivity extends AppCompatActivity
                         int day = datePicker.getDayOfMonth();
                         Calendar calendar = getCustomCalendar(year, month, day);
                         Medicine medicine = new Medicine(String.valueOf(editText.getText()), calendar.getTime());
-                        addTempMedicine(medicine);
-                        refreshRV();
+                        addMedicineDB(medicine);
                     }
                 })
                 .show();
     }
 
+    public void showMedicineDetails(final Medicine medicine){
+        View view = getLayoutInflater().inflate(R.layout.dialog_details, null);
+        ((TextView) view.findViewById(R.id.details_name)).setText(medicine.getName());
+        ((TextView) view.findViewById(R.id.detail_dateOver)).setText(dateFormat.format(medicine.getDateOver()));
+        ((TextView) view.findViewById(R.id.textView3)).setText(String.valueOf(medicine.getId()));
+        new AlertDialog.Builder(this)
+                .setTitle("Препарат")
+                .setView(view)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Изменить", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                        updateMedicine(medicine);
+                    }
+                })
+                .show();
+    }
+
+    public void updateMedicine(final Medicine medicine){
+        final int index = tempMedicineList.indexOf(medicine);
+        final long id = medicine.getId();
+        ConstraintLayout dialogLayout = (ConstraintLayout) getLayoutInflater()
+                .inflate(R.layout.dialog_input_medicine, null);
+        final EditText editText = (EditText) dialogLayout.findViewById(R.id.input_newMedicineName);
+        final DatePicker datePicker = (DatePicker) dialogLayout.findViewById(R.id.datePicker);
+        Calendar tempCalendar = Calendar.getInstance();
+        tempCalendar.setTime(medicine.getDateOver());
+        int year = tempCalendar.get(Calendar.YEAR);
+        int month = tempCalendar.get(Calendar.MONTH);
+        int day = tempCalendar.get(Calendar.DAY_OF_MONTH);
+        editText.setText(medicine.getName());
+
+        datePicker.updateDate(year, month, day);
+        new AlertDialog.Builder(this)
+                .setTitle("Изменить препарат")
+                .setView(dialogLayout)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int year = datePicker.getYear();
+                        int month = datePicker.getMonth();
+                        int day = datePicker.getDayOfMonth();
+                        Calendar calendar = getCustomCalendar(year, month, day);
+                        Medicine medicine = new Medicine(id, String.valueOf(editText.getText()), calendar.getTime());
+                        editMedicineDB(index, medicine);
+                    }
+                })
+                .setNegativeButton("Удалить", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeMedicineDB(index, id);
+                    }
+                })
+                .show();
+    }
 }

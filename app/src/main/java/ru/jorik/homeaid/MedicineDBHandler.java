@@ -7,11 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static ru.jorik.homeaid.LittleUtils.dateFormat;
 import static ru.jorik.homeaid.LittleUtils.getToday;
 
 
@@ -20,8 +20,6 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "medicaments";
-
-    static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
     static class DataBaseTables{
         static class Medicine{
@@ -116,7 +114,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
     }
 
     @Override
-    public int updateItem(int id, Medicine medicine) {
+    public int updateItem(long id, Medicine medicine) {
         SQLiteDatabase db = this.getWritableDatabase();
         String dateString = dateFormat.format(medicine.getDateOver());
 
@@ -131,7 +129,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
     }
 
     @Override
-    public void deleteItem(int id) {
+    public void deleteItem(long id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(DataBaseTables.Medicine.TABLE_NAME,
                 DataBaseTables.Medicine.ID + " = ?",
@@ -184,6 +182,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
             do {
                 String rName = c.getString(c.getColumnIndex(DataBaseTables.Medicine.NAME));
                 String tempDate = c.getString(c.getColumnIndex(DataBaseTables.Medicine.DATE_OVER));
+                long id = c.getLong(c.getColumnIndex(DataBaseTables.Medicine.ID));
                 Date rDate = getToday();//// TODO: 27.07.2017 убрать костыль инициализации
                 try {
                     rDate = dateFormat.parse(tempDate);
@@ -191,7 +190,7 @@ public class MedicineDBHandler extends SQLiteOpenHelper implements InterfaceData
                     e.printStackTrace();
                 }
 
-                Medicine medicine = new Medicine(rName, rDate);
+                Medicine medicine = new Medicine(id, rName, rDate);
                 medicineList.add(medicine);
             } while (c.moveToNext());
         }

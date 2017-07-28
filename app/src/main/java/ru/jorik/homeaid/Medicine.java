@@ -7,6 +7,8 @@ import java.util.Date;
  */
 
 public class Medicine {
+
+    private long id;
     private String name;
     private Date dateStart;
     private Date dateOver;
@@ -19,6 +21,16 @@ public class Medicine {
     public Medicine(String name, Date dateOver) {
         this.name = name;
         this.dateOver = dateOver;
+    }
+
+    public Medicine(long id, String name, Date dateOver) {
+        this.id = id;
+        this.name = name;
+        this.dateOver = dateOver;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getName() {

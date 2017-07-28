@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import static ru.jorik.homeaid.MedicineDBHandler.dateFormat;
+import static ru.jorik.homeaid.LittleUtils.dateFormat;
 
 
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Holder> {
